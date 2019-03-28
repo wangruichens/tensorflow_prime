@@ -20,32 +20,17 @@ def timeit(method):
 
     return timed
 
+
 @timeit
 def generator(target):
     n = 1
     with open(target, 'w') as csvfile:
         w = csv.writer(csvfile, delimiter=',')
-        for row in tqdm(csv.reader(open('prime_1b.txt')),total=10**9):
+        for row in tqdm(csv.reader(open('prime100.txt')),total=10**9):
             p = int(row[0])
             while n < p - 1:
                 n += 1
-                if np.random.uniform(0, 1) > 0.8 and n % 2 != 0:
-                    w.writerow([n, 0])
-            if n == p-1:
-                n += 1
-                w.writerow([p, 1])
-
-
-@timeit
-def generator_with_even(target):
-    n = 1
-    with open(target, 'w') as csvfile:
-        w = csv.writer(csvfile, delimiter=',')
-        for row in tqdm(csv.reader(open('prime_1b.txt')),total=10**9):
-            p = int(row[0])
-            while n < p - 1:
-                n += 1
-                if np.random.uniform(0, 1) > 0.8:
+                if np.random.uniform(0, 1) > 0.95:
                     w.writerow([n, 0])
             if n == p-1:
                 n += 1

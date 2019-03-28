@@ -47,7 +47,7 @@ import time
 # print('finished... time: ',elapse_slow)
 
 start_time = time.time()
-lens=10**9
+lens=100
 l=list_primes(lens)
 with open('prime.txt','w') as f:
     for n in range(lens):
