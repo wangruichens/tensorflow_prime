@@ -35,7 +35,6 @@ for index,v in enumerate(l):
     if v:
         pos.append(index)
 
-
 n=2
 p=pos.pop(0)
 data_x=[]
@@ -129,6 +128,7 @@ model.summary()
 
 dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
 dataset_train = dataset.batch(1024).repeat()
+
 
 dataset_test=tf.data.Dataset.from_tensor_slices((x_test, y_test))
 dataset_test=dataset_test.batch(1024).repeat()

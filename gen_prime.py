@@ -19,8 +19,6 @@ def to_bin(x,bins=20):
     str=bin(x)[2:].zfill(bins)
     return [int(b) for b in str]
 
-
-
 # sieve algorithm
 # O(N*loglogN)
 def list_primes(n):
@@ -47,7 +45,6 @@ import time
 #     f.close()
 # elapse_slow=time.time() - start_time
 # print('finished... time: ',elapse_slow)
-
 
 start_time = time.time()
 lens=10**9
