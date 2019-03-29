@@ -33,3 +33,6 @@ tensorflow_prime.py 10亿的素数DNN模型，30位二进制表示。10亿内素
 素数相关猜想：
 
 哥德巴赫猜想，黎曼猜想，孪生素数猜想
+
+当然，不管模型多么复杂，batch size多大，都不能收敛
+![image](https://github.com/wangruichens/tensorflow_prime/blob/master/final.png)
