@@ -12,6 +12,10 @@ def get_available_gpus():
 print(get_available_gpus())
 print(tf.__version__)
 
+# if enabled, multi_gpu_model not working on 2 gpu.
+# matMul only accept float dtype.
+# tf.enable_eager_execution()
+
 def list_primes(n):
     if n < 3:
         return 0
@@ -25,10 +29,10 @@ def list_primes(n):
 
 def to_bin(x,bins=30):
     str=bin(x)[2:].zfill(bins)
-    return [int(b) for b in str]
+    return [float(b) for b in str]
 
 
-lens=10**5
+lens=10**6
 l=list_primes(lens)
 pos=[]
 for index,v in enumerate(l):
@@ -102,21 +106,21 @@ for i in range(3):
 
 # Should not use dropout here.
 with tf.device('/cpu:0'):
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(20,activation='relu',input_shape=(30,)))
-    # model.add(tf.keras.layers.Dropout(0.5))
-    #
-    model.add(tf.keras.layers.Dense(15,activation='relu'))
-    # model.add(tf.keras.layers.Dropout(0.5))
-    #
-    model.add(tf.keras.layers.Dense(5,activation='relu'))
-    # model.add(tf.keras.layers.Dropout(0.5))
+    # Functional Model
+    inputs = tf.keras.layers.Input(shape=(30,))
 
-    model.add(tf.keras.layers.Dense(2, activation='softmax'))
+    x = tf.keras.layers.Dense(128, activation='relu')(inputs)
+    x = tf.keras.layers.Dense(64, activation='relu')(x)
+    x = tf.keras.layers.Dense(32, activation='relu')(x)
+    x = tf.keras.layers.Dense(16, activation='relu')(x)
+    x = tf.keras.layers.Dense(8, activation='relu')(x)
+    x = tf.keras.layers.Dense(4, activation='relu')(x)
+    predictions = tf.keras.layers.Dense(2, activation='softmax')(x)
+    model = tf.keras.Model(inputs=inputs, outputs=predictions)
 
 
-# Multi gpu is very easy using keras
-# model = tf.keras.utils.multi_gpu_model(model, gpus=2)
+# Multi gpu
+model = tf.keras.utils.multi_gpu_model(model, gpus=2,cpu_merge=False)
 
 tensorboard=TensorBoard(log_dir='logs/{}'.format(time()))
 
@@ -132,6 +136,8 @@ dataset_train = dataset.batch(1024).repeat()
 
 dataset_test=tf.data.Dataset.from_tensor_slices((x_test, y_test))
 dataset_test=dataset_test.batch(1024).repeat()
+
+
 
 model.fit(dataset_train, epochs=100, steps_per_epoch=50,callbacks=[tensorboard])
 

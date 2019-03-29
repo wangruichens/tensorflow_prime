@@ -22,6 +22,9 @@ def _float_feature(value):
     """Returns a float_list from a float / double."""
     return tf.train.Feature(float_list=tf.train.FloatList(value=value))
 
+def _bytes_feature(value):
+  """Returns a bytes_list from a string / byte."""
+  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 def _int64_feature(value):
     """Returns an int64_list from a bool / enum / int / uint."""
@@ -30,12 +33,12 @@ def _int64_feature(value):
 
 def converter(source, target):
 
-    dataset = tf.data.experimental.CsvDataset([source], record_defaults=[tf.int64]*31)
+    dataset = tf.data.experimental.CsvDataset([source], record_defaults=[tf.int32]*31)
 
     # map can use tf.py_func to apply arbitrary python logic
 
     def _parse(*x):
-        return x[0:-1],tf.one_hot(x[-1],depth=2,dtype=tf.float32)
+        return x[0:-1],tf.one_hot(x[-1],depth=2,dtype=tf.int32)
 
     dataset = dataset.map(_parse)
 
@@ -50,7 +53,7 @@ def converter(source, target):
     def serialize_example(x, y):
         feature = {
             'feature': _int64_feature(x),
-            'label': _float_feature(y),
+            'label': _int64_feature(y),
         }
         example_proto = tf.train.Example(features=tf.train.Features(feature=feature))
         return example_proto.SerializeToString()

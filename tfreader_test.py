@@ -14,7 +14,7 @@ if __name__ == '__main__':
     print(get_available_gpus())
     print(tf.__version__)
 
-    source = ['tfrecord_1m']
+    source = ['data/tfrecord_1m']
     raw_dataset = tf.data.TFRecordDataset(source)
 
     for raw_record in raw_dataset.take(10):
@@ -22,15 +22,15 @@ if __name__ == '__main__':
 
     feature_description = {
         'feature': tf.FixedLenFeature((30),tf.int64),
-        'label': tf.FixedLenFeature((2), tf.float32),
+        'label': tf.FixedLenFeature((2), tf.int64),
     }
 
-    from tensorflow.python.keras.utils import to_categorical
     def _parse_function(example_proto):
         parsed_feature= tf.parse_single_example(example_proto, feature_description)
-        return parsed_feature['feature'],parsed_feature['label']
+        # MatMul expected float tensor. Not accept int64
+        return tf.cast(parsed_feature['feature'],tf.float32),tf.cast(parsed_feature['label'],tf.float32)
 
-    parsed_dataset = raw_dataset.map(_parse_function)
+    dataset = raw_dataset.map(_parse_function)
 
-    for raw_record in parsed_dataset.take(10):
-        print(repr(raw_record))
+    for p in dataset.take(10):
+        print(repr(p))

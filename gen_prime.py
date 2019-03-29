@@ -1,3 +1,20 @@
+import  time
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        if 'log_time' in kw:
+            name = kw.get('log_name', method.__name__.upper())
+            kw['log_time'][name] = int((te - ts) * 1000)
+        else:
+            print('%r  %2.2f ms' % \
+                  (method.__name__, (te - ts) * 1000))
+        return result
+    return timed
+
+
 def _odd_iter():
     n = 1
     while True:
@@ -19,8 +36,9 @@ def to_bin(x,bins=20):
     str=bin(x)[2:].zfill(bins)
     return [int(b) for b in str]
 
-# sieve algorithm
+# Eratosthenes algorithm
 # O(N*loglogN)
+@timeit
 def list_primes(n):
     if n < 3:
         return 0
@@ -31,7 +49,22 @@ def list_primes(n):
             primes[i * i: n: i] = [False] * len(primes[i * i: n: i])
     return primes
 
-import time
+# Euler algorithm
+# every composite number will be killed by its minimal prime number
+@timeit
+def euler(lens):
+    ss = []
+    check = [True]*(lens + 1)
+    for i in range(2, lens):
+        if check[i]:
+            ss.append(i)
+        for j in ss:
+            if j * i > lens:
+                break
+            check[j * i] = False
+            if i % j == 0:
+                break
+    return ss
 
 # start_time = time.time()
 # lens=10**1
@@ -49,6 +82,7 @@ import time
 start_time = time.time()
 lens=10**6
 l=list_primes(lens)
+# l2=euler(lens)
 with open('prime_1m.txt','w') as f:
     for n in range(lens):
         if l[n]==True:

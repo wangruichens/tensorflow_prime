@@ -34,7 +34,7 @@ def generator(target):
     neg=0
     with open(target, 'w') as csvfile:
         w = csv.writer(csvfile, delimiter=',')
-        for row in tqdm(csv.reader(open('prime_1b.txt')),total=50847534):
+        for row in tqdm(csv.reader(open('prime_1m.txt')),total=50847534):
             p = int(row[0])
             while n < p - 1:
                 n += 1
@@ -49,4 +49,4 @@ def generator(target):
 
 if __name__ == '__main__':
     # cost 12 min
-    generator('data/dataset_1b.csv')
+    generator('data/dataset_1m.csv')
