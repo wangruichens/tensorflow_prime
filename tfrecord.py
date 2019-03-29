@@ -7,8 +7,7 @@
 
 
 import tensorflow as tf
-import pickle
-from tensorflow.python.keras.utils import to_categorical
+
 import numpy as np
 
 
@@ -31,65 +30,42 @@ def _int64_feature(value):
 
 def converter(source, target):
 
-    d=pickle.load(open(source,'rb'))
+    dataset = tf.data.experimental.CsvDataset([source], record_defaults=[tf.int64]*31)
 
-    # y=np.hsplit(d,indices_or_sections=2)
+    # map can use tf.py_func to apply arbitrary python logic
 
-    print(d[10])
-    print(d.shape)
+    def _parse(*x):
+        return x[0:-1],tf.one_hot(x[-1],depth=2,dtype=tf.float32)
 
-    dataset = tf.data.experimental.CsvDataset([source], record_defaults=[tf.int64, tf.float32])
+    dataset = dataset.map(_parse)
 
-    # Using tf.py_func to applying arbitrary python logic
-    # should always use tensorflow operations if possible for performance reason
-
-    # actually this already can be passed to model.
-
-    def _parse(x, y):
-        return (to_bin(x), to_categorical(y, num_classes=2))
-
-    dataset = dataset.map(lambda x, y: tuple(tf.py_func(_parse, [x, y], [tf.int64, tf.float32])))
-
-    ############################ Testing ############################
     # for a,b in dataset.take(1):
     #     print(a)
     #     print(b)
 
-    # next_element = dataset.make_one_shot_iterator().get_next()
-    # with tf.Session() as sess:
-    #   while True:
-    #     try:
-    #       print(sess.run(next_element))
-    #     except tf.errors.OutOfRangeError:
-    #       break
-    ############################ Testing ############################
 
     # tensorflow tfrecord only support string type, and must be a scalar. So need to serialized our dataset.
-    # using tf.Example
-    # Fundamentally a tf.Example is a {"string": tf.train.Feature} mapping.
+    # fundamentally a tf.Example is a {"string": tf.train.Feature} mapping.
 
-    def my_serialize(x, y):
+    def serialize_example(x, y):
         feature = {
             'feature': _int64_feature(x),
             'label': _float_feature(y),
         }
-        # using tf.train.Example to serialize feature message
         example_proto = tf.train.Example(features=tf.train.Features(feature=feature))
         return example_proto.SerializeToString()
 
-    def tf_serialize(x, y):
+    def tf_serialize(x,y):
         tf_string = tf.py_func(
-            my_serialize,
-            (x, y),  # pass these args to the above function.
-            tf.string)  # the return type is <a href="../../api_docs/python/tf#string"><code>tf.string</code></a>.
-        return tf.reshape(tf_string, ())  # The result is a scalar
+            serialize_example,
+            (x,y),
+            tf.string)
+        return tf.reshape(tf_string, ())
 
-    serialized_dataset = dataset.map(tf_serialize)
+    serialized_dataset=dataset.map(tf_serialize)
 
-    # tf.Tensor(b'\nF\n\x15\n\x05label\x12\x0c\x12\n\n\x08\x00\x00\x80?\x00\x00\x00\x00\n-\n\x07feature\x12"\x1a \n\x1e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01', shape=(), dtype=string)
     for a in serialized_dataset.take(1):
         print(a)
-        print(tf.train.Example.FromString(a))
 
     writer = tf.data.experimental.TFRecordWriter(target)
     writer.write(serialized_dataset)
@@ -98,4 +74,4 @@ def converter(source, target):
 
 if __name__ == '__main__':
     tf.enable_eager_execution()
-    converter('dataset.pkl', 'dataset_tf')
+    converter('data/dataset_1b.csv', 'data/tfrecord_1b')

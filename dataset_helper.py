@@ -21,22 +21,32 @@ def timeit(method):
     return timed
 
 
+def to_bin(x,y, bins=30):
+    binary = bin(x)[2:].zfill(bins)
+    binary +=str(y)
+    return [int(b) for b in binary]
+
+# 50847534 prime number less than 10**9
 @timeit
 def generator(target):
     n = 1
+    pos=0
+    neg=0
     with open(target, 'w') as csvfile:
         w = csv.writer(csvfile, delimiter=',')
-        for row in tqdm(csv.reader(open('prime100.txt')),total=10**9):
+        for row in tqdm(csv.reader(open('prime_1b.txt')),total=50847534):
             p = int(row[0])
             while n < p - 1:
                 n += 1
-                if np.random.uniform(0, 1) > 0.95:
-                    w.writerow([n, 0])
+                if np.random.uniform(0, 1) > 0.94:
+                    w.writerow(to_bin(n,0))
+                    neg+=1
             if n == p-1:
                 n += 1
-                w.writerow([p, 1])
+                w.writerow(to_bin(n,1))
+                pos+=1
+    print('done, pos num={0},neg={1}'.format(pos,neg))
 
 if __name__ == '__main__':
     # cost 12 min
-    generator('dataset.csv')
-    # generator_with_even('dataset_even.csv')
+    generator('data/dataset_1b.csv')

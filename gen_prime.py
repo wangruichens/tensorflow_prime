@@ -47,9 +47,9 @@ import time
 # print('finished... time: ',elapse_slow)
 
 start_time = time.time()
-lens=100
+lens=10**6
 l=list_primes(lens)
-with open('prime.txt','w') as f:
+with open('prime_1m.txt','w') as f:
     for n in range(lens):
         if l[n]==True:
            # write to file
